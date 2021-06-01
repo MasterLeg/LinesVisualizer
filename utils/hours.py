@@ -67,8 +67,13 @@ class Hours:
         :param timestamp_now: [datetime] Current timestamp in the database
         :return:
         """
-        last = datetime(timestamp_now.year, timestamp_now.month, timestamp_now.day, timestamp_now.hour - 1)
-        return last
+        if timestamp_now.hour > 0:
+            last = datetime(timestamp_now.year, timestamp_now.month, timestamp_now.day, timestamp_now.hour - 1)
+            return last
+        # If time is 0:
+        else:
+            last = datetime(timestamp_now.year, timestamp_now.month, timestamp_now.day, 23)
+            return last
 
     def current_hour(self, timestamp_now):
         """
