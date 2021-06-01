@@ -74,19 +74,10 @@ class DBStarted(DataBase):
 
         return cartridges_per_hour
 
-    def get_last_cartridge_date(self):
+    def get_last_cartridge_date_corrected(self):
         query = f"""
          SELECT MAX({self.time_field})
          FROM {self.table};
          """
-
-        collected_data = self.execute_query_get_one(query)
-        return collected_data
-
-    def get_current_timestamp(self):
-        query = f"""
-         SELECT CURRENT_TIMESTAMP;
-         """
-
-        collected_data = self.execute_query_get_one(query)
+        collected_data = self.execute_query_get_one(query) - self.timedelta
         return collected_data

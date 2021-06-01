@@ -58,12 +58,13 @@ class WebApp:
 
             # Get the hours in whole datetime format
             hours = Hours()
-            current_timestamp = database.get_current_timestamp()
-            last_hour = hours.last_hour(current_timestamp)
-            current_hour = hours.current_hour(current_timestamp)
-            next_hour = hours.next_hour(current_timestamp)
+            delta = database.timedelta
+            corrected_current_timestamp = database.get_current_timestamp() - delta
+            last_hour = hours.last_hour(corrected_current_timestamp)
+            current_hour = hours.current_hour(corrected_current_timestamp)
+            next_hour = hours.next_hour(corrected_current_timestamp)
 
-            now_unix = hours.now_unix()
+            now_unix_corrected =  hours.datetime_to_unix(corrected_current_timestamp)
             dates_unix_list = hours.get_unix_dates_list()
 
             dates_list = hours.get_datetime_hours_list(15)
@@ -71,11 +72,11 @@ class WebApp:
             # Get manufactured cartridges
             previous_cartridges = database.get_cartridges_between_datetimes(last_hour, current_hour)
             current_cartridges = database.get_cartridges_between_datetimes(current_hour, next_hour)
-            finished_cartridges_by_hour = database.get_split_hour_cartridges(now_unix, dates_unix_list)
-            last_cartridge_date = database.get_last_cartridge_date()
+            finished_cartridges_by_hour = database.get_split_hour_cartridges(now_unix_corrected, dates_unix_list)
+            last_cartridge_date = database.get_last_cartridge_date_corrected()
 
             # Line speed indicator
-            time_since_last_cartridge = int((current_timestamp - last_cartridge_date).total_seconds())
+            time_since_last_cartridge = int((corrected_current_timestamp - last_cartridge_date).total_seconds())
 
             specs = {
                 'Started': [[{"colspan": 2}, None], [{"colspan": 2}, None]],
@@ -188,11 +189,12 @@ class WebApp:
 
 if __name__ == '__main__':
     # Configure base logger object
-    logging.basicConfig(filename='logfile.txt',
-                        format=u'%(asctime)s - %(levelname)s - [%(name)s]: %(message)s',
-                        filemode='w',
-                        level=logging.ERROR
-                        )
+    logging.basicConfig(
+        level=logging.CRITICAL,
+        filename='logfile.txt',
+        format=u'%(asctime)s - %(levelname)s - [%(name)s]: %(message)s',
+        filemode='w'
+    )
 
     # Create a logging object
     logger = logging.getLogger()
@@ -231,4 +233,4 @@ if __name__ == '__main__':
     except Exception as e:
         # Save in logger file
         print('Not introduced any command for the python script execution')
-        logger.error('Error: {}'.format(e), exc_info=True)
+        logger.critical('Error: {}'.format(e), exc_info=True)

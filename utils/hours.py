@@ -67,13 +67,8 @@ class Hours:
         :param timestamp_now: [datetime] Current timestamp in the database
         :return:
         """
-        if timestamp_now.hour > 0:
-            last = datetime(timestamp_now.year, timestamp_now.month, timestamp_now.day, timestamp_now.hour - 1)
-            return last
-        # If time is 0:
-        else:
-            last = datetime(timestamp_now.year, timestamp_now.month, timestamp_now.day, 23)
-            return last
+        last = datetime(timestamp_now.year, timestamp_now.month, timestamp_now.day, timestamp_now.hour) - timedelta(hours=1)
+        return last
 
     def current_hour(self, timestamp_now):
         """
@@ -92,18 +87,18 @@ class Hours:
         :param timestamp_now: [datetime] Current timestamp in the database
         :return:
         """
-        last = datetime(timestamp_now.year, timestamp_now.month, timestamp_now.day, timestamp_now.hour + 1)
-        return last
+        next = datetime(timestamp_now.year, timestamp_now.month, timestamp_now.day, timestamp_now.hour) + timedelta(hours=1)
+        return next
 
-    def _datetime_to_unix(self, date):
+    def datetime_to_unix(self, date):
         unixtime = int(time.mktime(date.timetuple()))
         return unixtime
 
     def now_unix(self):
         now = datetime.now()
-        now_unix = self._datetime_to_unix(now)
+        now_unix = self.datetime_to_unix(now)
         return now_unix
 
     def get_unix_dates_list(self):
         dates = self.get_datetime_hours_list(15)
-        return [self._datetime_to_unix(date) for date in dates]
+        return [self.datetime_to_unix(date) for date in dates]

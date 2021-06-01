@@ -1,5 +1,7 @@
 import mysql.connector
 from mysql.connector import Error
+from datetime import datetime
+from utils.hours import Hours
 
 
 class DataBase:
@@ -13,7 +15,6 @@ class DataBase:
         self.password = password
         self.table = table
         self.time_field = time_field
-
         self.name = kind + ' - ' + line
 
         try:
@@ -31,6 +32,13 @@ class DataBase:
 
         except Error as e:
             print(f"Error while connecting to {self.name}\t", e)
+
+        hours = Hours()
+        db_time = self.get_current_timestamp()
+        real_time = datetime.now()
+
+        self.timedelta = db_time - real_time
+        self.unix_timedelta = hours.datetime_to_unix(db_time) - hours.datetime_to_unix(real_time)
 
     def execute_query_get_one(self, query):
         self.connection.commit()
@@ -53,3 +61,16 @@ class DataBase:
 
     def get_line(self):
         return self.line
+
+    def get_current_timestamp(self):
+        query = f"""
+        SELECT CURRENT_TIMESTAMP;
+        """
+        database_timestamp = self.execute_query_get_one(query)
+        return database_timestamp
+
+    def get_timedelta(self):
+        return self.timedelta
+
+    def get_unix_timedelta(self):
+        return self.unix_timedelta

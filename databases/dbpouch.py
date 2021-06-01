@@ -17,8 +17,8 @@ class DBPouch(DataBase):
         query = f"""
                 SELECT COUNT(DISTINCT SN)
                 FROM {self.table}
-                WHERE {self.time_field} BETWEEN '{start_hour}'
-                AND '{end_hour}'       
+                WHERE {self.time_field} BETWEEN '{start_hour + self.timedelta}'
+                AND '{end_hour + self.timedelta}'       
                 """
         one_hour_cartridges = self.execute_query_get_one(query)
 
@@ -38,8 +38,9 @@ class DBPouch(DataBase):
         query = f"""
         SELECT UNIX_TIMESTAMP({self.time_field}) DIV 900 * 900 AS "time", count(ID) AS "ID"
         FROM {self.table}
-        WHERE {self.time_field} BETWEEN FROM_UNIXTIME({start_date_unix}) 
-        AND FROM_UNIXTIME({now_unix})
+        WHERE {self.time_field} 
+            BETWEEN FROM_UNIXTIME({start_date_unix + self.unix_timedelta}) 
+            AND FROM_UNIXTIME({now_unix + self.unix_timedelta})
         GROUP BY 1
         ORDER BY UNIX_TIMESTAMP({self.time_field}) DIV 900 * 900;
         """
@@ -74,19 +75,12 @@ class DBPouch(DataBase):
 
         return cartridges_per_hour
 
-    def get_last_cartridge_date(self):
+    def get_last_cartridge_date_corrected(self):
         query = f"""
         SELECT MAX({self.time_field})
         FROM {self.table};
         """
-
-        collected_data = self.execute_query_get_one(query)
+        collected_data = self.execute_query_get_one(query) - self.timedelta
         return collected_data
 
-    def get_current_timestamp(self):
-        query = f"""
-        SELECT CURRENT_TIMESTAMP;
-        """
 
-        collected_data = self.execute_query_get_one(query)
-        return collected_data
